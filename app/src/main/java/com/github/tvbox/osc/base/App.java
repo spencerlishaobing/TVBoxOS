@@ -1,8 +1,10 @@
 package com.github.tvbox.osc.base;
 
 import android.app.Activity;
+
 import androidx.multidex.MultiDexApplication;
 
+import com.github.catvod.crawler.JsLoader;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
@@ -19,7 +21,6 @@ import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
 import com.p2p.P2PClass;
 import com.whl.quickjs.android.QuickJSLoader;
-import com.github.catvod.crawler.JsLoader;
 
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
@@ -67,6 +68,13 @@ public class App extends MultiDexApplication {
         Hawk.put(HawkConfig.DEBUG_OPEN, false);
         if (!Hawk.contains(HawkConfig.PLAY_TYPE)) {
             Hawk.put(HawkConfig.PLAY_TYPE, 1);
+        }
+        // 首页多行、去广告默认开启
+        if (!Hawk.contains(HawkConfig.HOME_REC_STYLE)) {
+            Hawk.put(HawkConfig.HOME_REC_STYLE, true);
+        }
+        if (!Hawk.contains(HawkConfig.M3U8_PURIFY)) {
+            Hawk.put(HawkConfig.M3U8_PURIFY, true);
         }
     }
 
