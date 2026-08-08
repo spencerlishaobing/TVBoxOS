@@ -1,6 +1,5 @@
 package com.github.tvbox.osc.ui.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,12 +11,9 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.GridLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,10 +30,10 @@ import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.event.ServerEvent;
-import com.github.tvbox.osc.ui.adapter.PinyinAdapter;
 import com.github.tvbox.osc.ui.adapter.SearchAdapter;
 import com.github.tvbox.osc.ui.dialog.RemoteDialog;
 import com.github.tvbox.osc.ui.dialog.SearchCheckboxDialog;
+import com.github.tvbox.osc.ui.tv.widget.FlowLayout;
 import com.github.tvbox.osc.ui.tv.widget.SearchKeyboard;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
@@ -102,18 +98,16 @@ public class SearchActivity extends BaseActivity {
     private LinearLayout llLayout;
     private LinearLayout llHistoryWord;
     private TvRecyclerView mGridView;
-    private TvRecyclerView mGridViewWord;
-    private GridLayout historyWordGrid;
+    private FlowLayout mGridViewWord;
+    private FlowLayout historyWordGrid;
     SourceViewModel sourceViewModel;
     private RemoteDialog remoteDialog;
     private EditText etSearch;
     private TextView tvSearch;
     private TextView tvClear;
-    private ImageView tvHistoryClear;
+    private TextView tvHistoryClear;
     private SearchKeyboard keyboard;
     private SearchAdapter searchAdapter;
-    private PinyinAdapter wordAdapter;
-    private PinyinAdapter hotWordAdapter;
     private String searchTitle = "";
     private TextView tvSearchCheckboxBtn;
 
@@ -149,11 +143,9 @@ public class SearchActivity extends BaseActivity {
         }
         requestSearchFocusWhenReady();
         applySearchWordMode();
-        if (aggregateSearchMode) {
-            refreshSearchHistoryWords();
-            if (hots != null && !hots.isEmpty()) {
-                hotWordAdapter.setNewData(hots);
-            }
+        refreshSearchHistoryWords();
+        if (hots != null && !hots.isEmpty()) {
+            setHotWordsData(hots);
         }
     }
 
@@ -183,23 +175,8 @@ public class SearchActivity extends BaseActivity {
         mGridViewWord = findViewById(R.id.mGridViewWord);
         historyWordGrid = findViewById(R.id.historyWordGrid);
         tvHistoryClear = findViewById(R.id.tvHistoryClear);
-        mGridViewWord.setHasFixedSize(true);
-        wordAdapter = new PinyinAdapter();
-        hotWordAdapter = new PinyinAdapter();
         wordsSwitch = findViewById(R.id.wordSwitch);
         applySearchWordMode();
-        wordAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                startSearch(wordAdapter.getItem(position));
-            }
-        });
-        hotWordAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                startSearch(hotWordAdapter.getItem(position));
-            }
-        });
         mGridView.setHasFixedSize(true);
         // lite
         if (Hawk.get(HawkConfig.SEARCH_VIEW, 0) == 0)
@@ -230,24 +207,12 @@ public class SearchActivity extends BaseActivity {
         wordsSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (aggregateSearchMode) {
-                    return;
-                }
                 FastClickCheckUtil.check(v);
                 String wd = wordsSwitch.getText().toString().trim();
-                if(wd.contains("热词")){
-                    ArrayList<String> hisWord= Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
-                    if (hisWord.isEmpty()){
-                        Toast.makeText(mContext, "暂无历史搜索", Toast.LENGTH_SHORT).show();
-                    }else {
-                        wordsSwitch.setText("历史 搜索");
-                        wordAdapter.setNewData(hisWord);
-                    }
-                }
-                if(wd.equals("历史 搜索")){
-                    wordsSwitch.setText("热词 搜索");
-                    if(hots!=null && !hots.isEmpty()){
-                        wordAdapter.setNewData(hots);
+                if (wd.contains("想搜")) {
+                    setHotTitle();
+                    if (hots != null && !hots.isEmpty()) {
+                        setHotWordsData(hots);
                     }
                 }
             }
@@ -402,21 +367,12 @@ public class SearchActivity extends BaseActivity {
         return Hawk.get(HawkConfig.FAST_SEARCH_MODE, true);
     }
 
-    private void setAggregateHotTitle() {
-        wordsSwitch.setText("热  门");
+    private void setHotTitle() {
+        wordsSwitch.setText("热词搜索");
         wordsSwitch.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_22));
         wordsSwitch.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             wordsSwitch.setLetterSpacing(0.08f);
-        }
-    }
-
-    private void setNormalWordTitle() {
-        wordsSwitch.setText("热词 | 历史");
-        wordsSwitch.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_20));
-        wordsSwitch.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            wordsSwitch.setLetterSpacing(0f);
         }
     }
 
@@ -427,49 +383,41 @@ public class SearchActivity extends BaseActivity {
         }
         aggregateSearchModeInited = true;
         aggregateSearchMode = aggregateMode;
+        llHistoryWord.setVisibility(View.VISIBLE);
+        setHotTitle();
+        wordsSwitch.setFocusable(true);
+        wordsSwitch.setBackgroundResource(R.drawable.shape_user_focus);
         if (aggregateSearchMode) {
-            llHistoryWord.setVisibility(View.VISIBLE);
             llLayout.setVisibility(View.GONE);
             mGridView.setVisibility(View.GONE);
-            setAggregateHotTitle();
-            wordsSwitch.setFocusable(false);
-            wordsSwitch.setBackground(null);
-            mGridViewWord.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
-            mGridViewWord.setAdapter(hotWordAdapter);
-            refreshSearchHistoryWords();
         } else {
-            llHistoryWord.setVisibility(View.GONE);
             llLayout.setVisibility(View.VISIBLE);
             if (mGridView.getVisibility() == View.GONE) {
                 mGridView.setVisibility(View.INVISIBLE);
             }
-            setNormalWordTitle();
-            wordsSwitch.setFocusable(true);
-            wordsSwitch.setBackgroundResource(R.drawable.shape_user_focus);
-            mGridViewWord.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
-            mGridViewWord.setAdapter(wordAdapter);
         }
+        refreshSearchHistoryWords();
     }
 
     private void setHotWordsData(ArrayList<String> data) {
-        if (aggregateSearchMode) {
-            hotWordAdapter.setNewData(data);
-        } else {
-            wordAdapter.setNewData(data);
-        }
+        refreshWordFlow(mGridViewWord, data);
     }
 
     private void refreshSearchHistoryWords() {
         ArrayList<String> history = Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
-        historyWordGrid.removeAllViews();
+        refreshWordFlow(historyWordGrid, history);
+    }
+
+    private void refreshWordFlow(FlowLayout container, List<String> words) {
+        container.removeAllViews();
         int itemHeight = getResources().getDimensionPixelSize(R.dimen.vs_50);
         int itemMargin = getResources().getDimensionPixelSize(R.dimen.vs_5);
         int paddingH = getResources().getDimensionPixelSize(R.dimen.vs_10);
         int maxWidth = getResources().getDimensionPixelSize(R.dimen.vs_220);
         float textSize = getResources().getDimension(R.dimen.ts_22);
         int textColor = getResources().getColor(R.color.color_FFFFFF);
-        for (int i = 0; i < history.size(); i++) {
-            final String word = history.get(i);
+        int minWidth = getResources().getDimensionPixelSize(R.dimen.vs_60);
+        for (final String word : words) {
             TextView item = new TextView(this);
             item.setText(word);
             item.setSingleLine(true);
@@ -480,7 +428,7 @@ public class SearchActivity extends BaseActivity {
             item.setTextColor(textColor);
             item.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
             item.setMaxWidth(maxWidth);
-            item.setMinWidth(getResources().getDimensionPixelSize(R.dimen.vs_80));
+            item.setMinWidth(minWidth);
             item.setPadding(paddingH, 0, paddingH, 0);
             item.setBackgroundResource(R.drawable.shape_user_focus);
             item.setOnClickListener(new View.OnClickListener() {
@@ -489,15 +437,13 @@ public class SearchActivity extends BaseActivity {
                     startSearch(word);
                 }
             });
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams(
-                    GridLayout.spec(i / 3),
-                    GridLayout.spec(i % 3)
-            );
-            params.width = GridLayout.LayoutParams.WRAP_CONTENT;
-            params.height = itemHeight;
+            FlowLayout.LayoutParams params = new FlowLayout.LayoutParams(
+                    FlowLayout.LayoutParams.WRAP_CONTENT,
+                    itemHeight);
             params.setMargins(itemMargin, itemMargin, itemMargin, itemMargin);
-            historyWordGrid.addView(item, params);
+            container.addView(item, params);
         }
+        container.scrollTo(0, 0);
     }
 
     private void initViewModel() {
@@ -536,7 +482,7 @@ public class SearchActivity extends BaseActivity {
                             }
                             wordsSwitch.setText("猜你 想搜");
                             setHotWordsData(hots);
-                            mGridViewWord.smoothScrollToPosition(0);
+                            mGridViewWord.scrollTo(0, 0);
                         } catch (Throwable th) {
                             th.printStackTrace();
                         }
@@ -592,12 +538,8 @@ public class SearchActivity extends BaseActivity {
                 search(title);
             }
         }
-        if (aggregateSearchMode) {
-            setAggregateHotTitle();
-            refreshSearchHistoryWords();
-        } else {
-            setNormalWordTitle();
-        }
+        setHotTitle();
+        refreshSearchHistoryWords();
         if(hots!=null && !hots.isEmpty()){
             setHotWordsData(hots);
             return;

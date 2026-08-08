@@ -8,9 +8,65 @@
     android:clipToPadding="false"
     android:orientation="horizontal">
 
+    <!-- 左列：搜索历史（宽度占比 2） -->
     <LinearLayout
-        android:layout_width="@dimen/vs_420"
+        android:id="@+id/llHistoryWord"
+        android:layout_width="0mm"
         android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:padding="@dimen/vs_20">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/vs_50"
+            android:gravity="top"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvHistoryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="28mm"
+                android:gravity="center_vertical"
+                android:letterSpacing="0.08"
+                android:text="搜索历史"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/ts_22"
+                android:textStyle="bold" />
+
+            <Space
+                android:layout_width="0mm"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvHistoryClear"
+                android:layout_width="@dimen/vs_50"
+                android:layout_height="@dimen/vs_50"
+                android:background="@drawable/shape_user_focus"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="清空"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/ts_20" />
+        </LinearLayout>
+
+        <com.github.tvbox.osc.ui.tv.widget.FlowLayout
+            android:id="@+id/historyWordGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/vs_10"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+    </LinearLayout>
+
+    <!-- 中列：搜索输入（宽度占比 2） -->
+    <LinearLayout
+        android:layout_width="0mm"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
         android:orientation="vertical"
         android:padding="@dimen/vs_20">
 
@@ -24,7 +80,7 @@
             <TextView
                 android:id="@+id/tvSearchCheckboxBtn"
                 android:layout_width="match_parent"
-                android:layout_height="28mm"
+                android:layout_height="@dimen/vs_35"
                 android:background="@drawable/shape_user_focus"
                 android:focusable="true"
                 android:gravity="center"
@@ -116,13 +172,15 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- 右列：热词搜索 + 搜索结果（宽度占比 3） -->
     <LinearLayout
-        android:id="@+id/llWord"
-        android:layout_width="@dimen/vs_240"
+        android:layout_width="0mm"
         android:layout_height="match_parent"
+        android:layout_weight="3"
         android:orientation="vertical"
         android:paddingTop="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_20">
+        android:paddingBottom="@dimen/vs_20"
+        android:paddingRight="@dimen/vs_20">
 
         <TextView
             android:id="@+id/wordSwitch"
@@ -133,99 +191,40 @@
             android:background="@drawable/shape_user_focus"
             android:focusable="true"
             android:gravity="center"
-            android:text="热词 | 历史"
+            android:text="热词搜索"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/ts_20"
-            android:textStyle="normal" />
+            android:textSize="@dimen/ts_22"
+            android:textStyle="bold" />
 
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
+        <com.github.tvbox.osc.ui.tv.widget.FlowLayout
             android:id="@+id/mGridViewWord"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-            app:tv_selectedItemIsCentered="true"
-            app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llHistoryWord"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/vs_100"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_20"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/vs_50"
-            android:gravity="top"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvHistoryTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="28mm"
-                android:gravity="center_vertical"
-                android:letterSpacing="0.08"
-                android:text="历  史"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/ts_22"
-                android:textStyle="bold" />
-
-            <Space
-                android:layout_width="0mm"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/tvHistoryClear"
-                android:layout_width="@dimen/vs_50"
-                android:layout_height="@dimen/vs_50"
-                android:layout_marginRight="@dimen/vs_20"
-                android:background="@drawable/shape_user_focus"
-                android:focusable="true"
-                android:padding="@dimen/vs_5"
-                android:src="@drawable/icon_delete" />
-        </LinearLayout>
-
-        <GridLayout
-            android:id="@+id/historyWordGrid"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vs_10"
-            android:columnCount="3"
+            android:layout_height="0mm"
+            android:layout_weight="3"
             android:clipChildren="false"
             android:clipToPadding="false" />
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/llLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/vs_10"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/vs_10"
-        android:paddingRight="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_10">
-
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/mGridView"
+        <LinearLayout
+            android:id="@+id/llLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0mm"
+            android:layout_weight="2"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:paddingRight="@dimen/vs_20"
-            android:visibility="invisible"
-            app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-            app:tv_selectedItemIsCentered="true"
-            app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
+            android:orientation="vertical"
+            android:paddingTop="@dimen/vs_10"
+            android:visibility="gone">
+
+            <com.owen.tvrecyclerview.widget.TvRecyclerView
+                android:id="@+id/mGridView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:visibility="invisible"
+                app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
+                app:tv_selectedItemIsCentered="true"
+                app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
