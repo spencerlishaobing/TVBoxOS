@@ -64,6 +64,7 @@ import java.util.List;
 public class UserFragment extends BaseLazyFragment implements View.OnClickListener {
     private LinearLayout tvLive;
     private LinearLayout tvSearch;
+    private LinearLayout tvConfig;
     private LinearLayout tvLine;
     private LinearLayout tvSetting;
     private LinearLayout tvHistory;
@@ -148,6 +149,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         sourceViewModel = new ViewModelProvider(this).get(SourceViewModel.class);
         tvLive = findViewById(R.id.tvLive);
         tvSearch = findViewById(R.id.tvSearch);
+        tvConfig = findViewById(R.id.tvConfig);
         tvLine = findViewById(R.id.tvLine);
         tvSetting = findViewById(R.id.tvSetting);
         tvCollect = findViewById(R.id.tvFavorite);
@@ -155,6 +157,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvPush = findViewById(R.id.tvPush);
         tvLive.setOnClickListener(this);
         tvSearch.setOnClickListener(this);
+        tvConfig.setOnClickListener(this);
         tvLine.setOnClickListener(this);
         tvSetting.setOnClickListener(this);
         tvHistory.setOnClickListener(this);
@@ -162,6 +165,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvCollect.setOnClickListener(this);
         tvLive.setOnFocusChangeListener(focusChangeListener);
         tvSearch.setOnFocusChangeListener(focusChangeListener);
+        tvConfig.setOnFocusChangeListener(focusChangeListener);
         tvLine.setOnFocusChangeListener(focusChangeListener);
         tvSetting.setOnFocusChangeListener(focusChangeListener);
         tvHistory.setOnFocusChangeListener(focusChangeListener);
@@ -369,6 +373,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(LivePlayActivity.class);
         } else if (v.getId() == R.id.tvSearch) {
             jumpActivity(SearchActivity.class);
+        } else if (v.getId() == R.id.tvConfig) {
+            if (getActivity() instanceof HomeActivity) {
+                ((HomeActivity) getActivity()).showConfigDialog();
+            }
         } else if (v.getId() == R.id.tvLine) {
             if (getActivity() instanceof HomeActivity) {
                 ((HomeActivity) getActivity()).showLineSwitch();

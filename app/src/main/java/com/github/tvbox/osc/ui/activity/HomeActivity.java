@@ -44,6 +44,7 @@ import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
 import com.github.tvbox.osc.ui.dialog.AddSourceDialog;
+import com.github.tvbox.osc.ui.dialog.ConfigDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
@@ -873,6 +874,7 @@ public class HomeActivity extends BaseActivity {
 
     private SelectDialog<String> mLineSwitchDialog;
     private AddSourceDialog mAddSourceDialog;
+    private ConfigDialog mConfigDialog;
 
     /**
      * 首页线路切换：当前仓的线路 + 其他仓 + 添加仓
@@ -991,6 +993,30 @@ public class HomeActivity extends BaseActivity {
         if (!mAddSourceDialog.isShowing()) mAddSourceDialog.show();
     }
 
+    /**
+     * 配置弹窗：二维码扫码推送线路/多仓 + 手动输入推送（保存进多仓并切换线路）
+     */
+    public void showConfigDialog() {
+        if (isActivityUnavailable()) return;
+        if (mConfigDialog == null) {
+            mConfigDialog = new ConfigDialog(this);
+            mConfigDialog.setOnListener(new ConfigDialog.OnListener() {
+                @Override
+                public void onConfirm(String name, String url) {
+                    mConfigDialog = null;
+                    Toast.makeText(mContext, "已保存并切换线路", Toast.LENGTH_SHORT).show();
+                    switchApiAndReload(url);
+                }
+
+                @Override
+                public void onCancel() {
+                    mConfigDialog = null;
+                }
+            });
+        }
+        if (!mConfigDialog.isShowing()) mConfigDialog.show();
+    }
+
     private void dismissLineSwitchDialog() {
         if (mLineSwitchDialog != null) {
             if (mLineSwitchDialog.isShowing()) {
@@ -1006,6 +1032,15 @@ public class HomeActivity extends BaseActivity {
                 mAddSourceDialog.dismiss();
             }
             mAddSourceDialog = null;
+        }
+    }
+
+    private void dismissConfigDialog() {
+        if (mConfigDialog != null) {
+            if (mConfigDialog.isShowing()) {
+                mConfigDialog.dismiss();
+            }
+            mConfigDialog = null;
         }
     }
 
@@ -1070,6 +1105,7 @@ public class HomeActivity extends BaseActivity {
         dismissSiteSwitchDialog();
         dismissLineSwitchDialog();
         dismissAddSourceDialog();
+        dismissConfigDialog();
     }
 
     private void dismissConfigErrorDialog() {
