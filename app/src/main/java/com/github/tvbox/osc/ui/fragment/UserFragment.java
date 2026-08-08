@@ -24,6 +24,7 @@ import com.github.tvbox.osc.ui.activity.CollectActivity;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
+import com.github.tvbox.osc.ui.activity.HomeActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
 import com.github.tvbox.osc.ui.activity.PushActivity;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
@@ -63,6 +64,7 @@ import java.util.List;
 public class UserFragment extends BaseLazyFragment implements View.OnClickListener {
     private LinearLayout tvLive;
     private LinearLayout tvSearch;
+    private LinearLayout tvLine;
     private LinearLayout tvSetting;
     private LinearLayout tvHistory;
     private LinearLayout tvCollect;
@@ -146,18 +148,21 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         sourceViewModel = new ViewModelProvider(this).get(SourceViewModel.class);
         tvLive = findViewById(R.id.tvLive);
         tvSearch = findViewById(R.id.tvSearch);
+        tvLine = findViewById(R.id.tvLine);
         tvSetting = findViewById(R.id.tvSetting);
         tvCollect = findViewById(R.id.tvFavorite);
         tvHistory = findViewById(R.id.tvHistory);
         tvPush = findViewById(R.id.tvPush);
         tvLive.setOnClickListener(this);
         tvSearch.setOnClickListener(this);
+        tvLine.setOnClickListener(this);
         tvSetting.setOnClickListener(this);
         tvHistory.setOnClickListener(this);
         tvPush.setOnClickListener(this);
         tvCollect.setOnClickListener(this);
         tvLive.setOnFocusChangeListener(focusChangeListener);
         tvSearch.setOnFocusChangeListener(focusChangeListener);
+        tvLine.setOnFocusChangeListener(focusChangeListener);
         tvSetting.setOnFocusChangeListener(focusChangeListener);
         tvHistory.setOnFocusChangeListener(focusChangeListener);
         tvPush.setOnFocusChangeListener(focusChangeListener);
@@ -354,6 +359,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(LivePlayActivity.class);
         } else if (v.getId() == R.id.tvSearch) {
             jumpActivity(SearchActivity.class);
+        } else if (v.getId() == R.id.tvLine) {
+            if (getActivity() instanceof HomeActivity) {
+                ((HomeActivity) getActivity()).showLineSwitch();
+            }
         } else if (v.getId() == R.id.tvSetting) {
             jumpActivity(SettingActivity.class);
         } else if (v.getId() == R.id.tvHistory) {

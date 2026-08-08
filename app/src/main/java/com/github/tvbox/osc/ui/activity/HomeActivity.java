@@ -86,7 +86,6 @@ public class HomeActivity extends BaseActivity {
     private LinearLayout contentLayout;
     private TextView tvDate;
     private TextView tvName;
-    private TextView tvLine;
     private TvRecyclerView mGridView;
     private NoScrollViewPager mViewPager;
     private SourceViewModel sourceViewModel;
@@ -156,14 +155,6 @@ public class HomeActivity extends BaseActivity {
         this.topLayout = findViewById(R.id.topLayout);
         this.tvDate = findViewById(R.id.tvDate);
         this.tvName = findViewById(R.id.tvName);
-        this.tvLine = findViewById(R.id.tvLine);
-        refreshLineText();
-        tvLine.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showLineSwitch();
-            }
-        });
         this.contentLayout = findViewById(R.id.contentLayout);
         this.mGridView = findViewById(R.id.mGridView);
         this.mViewPager = findViewById(R.id.mViewPager);
@@ -423,7 +414,6 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void success() {
                 dataInitOk = true;
-                refreshLineText();
                 if (ApiConfig.get().getSpider().isEmpty()) {
                     jarInitOk = true;
                 }
@@ -779,10 +769,6 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 topHide = (byte) (hide ? 1 : 0);
-                if (tvLine != null) {
-                    // 顶部隐藏时线路按钮不可聚焦，避免丢失焦点
-                    tvLine.setFocusable(!hide);
-                }
             }
 
             @Override
@@ -891,7 +877,7 @@ public class HomeActivity extends BaseActivity {
     /**
      * 首页线路切换：当前仓的线路 + 其他仓 + 添加仓
      */
-    private void showLineSwitch() {
+    public void showLineSwitch() {
         if (isActivityUnavailable()) return;
         ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
         ArrayList<String> sources = HistoryHelper.getApiSourceList();
@@ -1003,26 +989,6 @@ public class HomeActivity extends BaseActivity {
             });
         }
         if (!mAddSourceDialog.isShowing()) mAddSourceDialog.show();
-    }
-
-    private void refreshLineText() {
-        if (tvLine == null) return;
-        String current = Hawk.get(HawkConfig.API_URL, "");
-        ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
-        String lineName = "";
-        for (String apiLine : apiLines) {
-            if (current.equals(HistoryHelper.getApiLineUrl(apiLine))) {
-                lineName = HistoryHelper.getApiLineName(apiLine);
-                break;
-            }
-        }
-        if (lineName.isEmpty()) {
-            tvLine.setText("线路");
-            tvLine.setSelected(false);
-        } else {
-            tvLine.setText(lineName);
-            tvLine.setSelected(true);
-        }
     }
 
     private void dismissLineSwitchDialog() {
