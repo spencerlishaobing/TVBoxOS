@@ -7,7 +7,6 @@ import android.animation.IntEvaluator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +43,7 @@ import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
+import com.github.tvbox.osc.ui.dialog.AddSourceDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
@@ -57,6 +57,7 @@ import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
@@ -68,7 +69,6 @@ import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -86,6 +86,7 @@ public class HomeActivity extends BaseActivity {
     private LinearLayout contentLayout;
     private TextView tvDate;
     private TextView tvName;
+    private TextView tvLine;
     private TvRecyclerView mGridView;
     private NoScrollViewPager mViewPager;
     private SourceViewModel sourceViewModel;
@@ -155,6 +156,14 @@ public class HomeActivity extends BaseActivity {
         this.topLayout = findViewById(R.id.topLayout);
         this.tvDate = findViewById(R.id.tvDate);
         this.tvName = findViewById(R.id.tvName);
+        this.tvLine = findViewById(R.id.tvLine);
+        refreshLineText();
+        tvLine.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showLineSwitch();
+            }
+        });
         this.contentLayout = findViewById(R.id.contentLayout);
         this.mGridView = findViewById(R.id.mGridView);
         this.mViewPager = findViewById(R.id.mViewPager);
@@ -414,6 +423,7 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void success() {
                 dataInitOk = true;
+                refreshLineText();
                 if (ApiConfig.get().getSpider().isEmpty()) {
                     jarInitOk = true;
                 }
@@ -769,6 +779,10 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 topHide = (byte) (hide ? 1 : 0);
+                if (tvLine != null) {
+                    // 顶部隐藏时线路按钮不可聚焦，避免丢失焦点
+                    tvLine.setFocusable(!hide);
+                }
             }
 
             @Override
@@ -871,6 +885,164 @@ public class HomeActivity extends BaseActivity {
             mSiteSwitchDialog.show();
     }
 
+    private SelectDialog<String> mLineSwitchDialog;
+    private AddSourceDialog mAddSourceDialog;
+
+    /**
+     * 首页线路切换：当前仓的线路 + 其他仓 + 添加仓
+     */
+    private void showLineSwitch() {
+        if (isActivityUnavailable()) return;
+        ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+        ArrayList<String> sources = HistoryHelper.getApiSourceList();
+        String current = Hawk.get(HawkConfig.API_URL, "");
+        ArrayList<String> items = new ArrayList<>();
+        int idx = 0;
+        for (String apiLine : apiLines) {
+            items.add(apiLine);
+            if (current.equals(HistoryHelper.getApiLineUrl(apiLine))) {
+                idx = items.size() - 1;
+            }
+        }
+        if (sources.size() > 1) {
+            for (String source : sources) {
+                String url = HistoryHelper.getApiLineUrl(source);
+                if (url.equals(current) || HistoryHelper.isApiLineUrl(url)) {
+                    continue;
+                }
+                items.add("#S#" + source);
+            }
+        }
+        items.add("#A#");
+        if (items.size() == 1) {
+            // 没有任何线路/仓，直接弹出添加仓
+            showAddSourceDialog();
+            return;
+        }
+        if (mLineSwitchDialog == null) {
+            mLineSwitchDialog = new SelectDialog<>(HomeActivity.this);
+            mLineSwitchDialog.setTip("线路选择");
+        }
+        final int selectIdx = idx;
+        mLineSwitchDialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<String>() {
+            @Override
+            public void click(String value, int pos) {
+                dismissLineSwitchDialog();
+                if (value.startsWith("#S#")) {
+                    // 切换到其他仓
+                    switchToSource(HistoryHelper.getApiLineUrl(value.substring(3)));
+                } else if (value.startsWith("#A#")) {
+                    // 添加仓
+                    showAddSourceDialog();
+                } else {
+                    // 切换线路
+                    String newApi = HistoryHelper.getApiLineUrl(value);
+                    if (!newApi.isEmpty()) {
+                        switchApiAndReload(newApi);
+                    }
+                }
+            }
+
+            @Override
+            public String getDisplay(String val) {
+                if (val.startsWith("#S#")) {
+                    return "仓 " + HistoryHelper.getApiLineDisplayName(val.substring(3));
+                }
+                if (val.startsWith("#A#")) {
+                    return "＋ 添加仓";
+                }
+                return HistoryHelper.getApiLineDisplayName(val);
+            }
+        }, SelectDialogAdapter.stringDiff, items, selectIdx);
+        if (!mLineSwitchDialog.isShowing()) mLineSwitchDialog.show();
+    }
+
+    /**
+     * 切换线路/仓并重新加载首页
+     */
+    private void switchApiAndReload(String newApi) {
+        String oldApi = Hawk.get(HawkConfig.API_URL, "");
+        if (newApi.isEmpty() || newApi.equals(oldApi)) return;
+        Hawk.put(HawkConfig.API_URL, newApi);
+        Hawk.put(HawkConfig.LIVE_API_URL, newApi);
+        HistoryHelper.setLiveApiHistory(newApi);
+        if (!HistoryHelper.isApiLineUrl(newApi)) {
+            // 切换的是仓地址，线路列表待加载时重建
+            HistoryHelper.clearApiLineList();
+        }
+        Toast.makeText(mContext, "线路切换中...", Toast.LENGTH_SHORT).show();
+        refreshHome(true);
+    }
+
+    /**
+     * 切换到指定仓（自动注册并加载其第一条线路）
+     */
+    private void switchToSource(String url) {
+        if (url == null || url.trim().isEmpty()) return;
+        String trimUrl = url.trim();
+        HistoryHelper.addApiSource(HistoryHelper.buildApiLine("", trimUrl));
+        switchApiAndReload(trimUrl);
+    }
+
+    private void showAddSourceDialog() {
+        if (isActivityUnavailable()) return;
+        dismissLineSwitchDialog();
+        if (mAddSourceDialog == null) {
+            mAddSourceDialog = new AddSourceDialog(this);
+            mAddSourceDialog.setOnListener(new AddSourceDialog.OnListener() {
+                @Override
+                public void onChange(String url) {
+                    mAddSourceDialog = null;
+                    switchToSource(url);
+                }
+
+                @Override
+                public void onCancel() {
+                    mAddSourceDialog = null;
+                }
+            });
+        }
+        if (!mAddSourceDialog.isShowing()) mAddSourceDialog.show();
+    }
+
+    private void refreshLineText() {
+        if (tvLine == null) return;
+        String current = Hawk.get(HawkConfig.API_URL, "");
+        ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+        String lineName = "";
+        for (String apiLine : apiLines) {
+            if (current.equals(HistoryHelper.getApiLineUrl(apiLine))) {
+                lineName = HistoryHelper.getApiLineName(apiLine);
+                break;
+            }
+        }
+        if (lineName.isEmpty()) {
+            tvLine.setText("线路");
+            tvLine.setSelected(false);
+        } else {
+            tvLine.setText(lineName);
+            tvLine.setSelected(true);
+        }
+    }
+
+    private void dismissLineSwitchDialog() {
+        if (mLineSwitchDialog != null) {
+            if (mLineSwitchDialog.isShowing()) {
+                mLineSwitchDialog.dismiss();
+            }
+            mLineSwitchDialog = null;
+        }
+    }
+
+    private void dismissAddSourceDialog() {
+        if (mAddSourceDialog != null) {
+            if (mAddSourceDialog.isShowing()) {
+                mAddSourceDialog.dismiss();
+            }
+            mAddSourceDialog = null;
+        }
+    }
+
     private void refreshHome()
     {
         refreshHome(true);
@@ -930,6 +1102,8 @@ public class HomeActivity extends BaseActivity {
     private void dismissHomeDialogs() {
         dismissConfigErrorDialog();
         dismissSiteSwitchDialog();
+        dismissLineSwitchDialog();
+        dismissAddSourceDialog();
     }
 
     private void dismissConfigErrorDialog() {

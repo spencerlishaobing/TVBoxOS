@@ -69,6 +69,67 @@ public class HistoryHelper {
         return lineName + API_LINE_SPLIT + lineUrl;
     }
 
+    /**
+     * 多仓管理：仓列表（每个仓 = 一个线路集合地址，格式与线路一致 name\turl）
+     */
+    public static ArrayList<String> getApiSourceList() {
+        return Hawk.get(HawkConfig.API_SOURCE_LIST, new ArrayList<String>());
+    }
+
+    public static void saveApiSourceList(ArrayList<String> list) {
+        Hawk.put(HawkConfig.API_SOURCE_LIST, list);
+    }
+
+    /**
+     * 添加仓（按 url 去重），返回是否新增
+     */
+    public static boolean addApiSource(String apiLine) {
+        ArrayList<String> sources = getApiSourceList();
+        String url = getApiLineUrl(apiLine);
+        for (String source : sources) {
+            if (url.equals(getApiLineUrl(source))) {
+                return false;
+            }
+        }
+        sources.add(0, apiLine);
+        saveApiSourceList(sources);
+        return true;
+    }
+
+    public static boolean isApiSourceUrl(String url) {
+        if (url == null || url.trim().isEmpty()) return false;
+        String trimUrl = url.trim();
+        for (String source : getApiSourceList()) {
+            if (trimUrl.equals(getApiLineUrl(source))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 显示名：优先使用配置的名字；名字缺省（等于 url）时取 url 最后一段
+     */
+    public static String getApiLineDisplayName(String value) {
+        String name = getApiLineName(value);
+        String url = getApiLineUrl(value);
+        if (!name.isEmpty() && !name.equals(url)) {
+            return name;
+        }
+        String trimUrl = url.trim();
+        while (trimUrl.endsWith("/") && trimUrl.length() > 1) {
+            trimUrl = trimUrl.substring(0, trimUrl.length() - 1);
+        }
+        int idx = trimUrl.lastIndexOf('/');
+        if (idx >= 0 && idx < trimUrl.length() - 1) {
+            String tail = trimUrl.substring(idx + 1);
+            if (!tail.isEmpty()) {
+                return tail;
+            }
+        }
+        return trimUrl;
+    }
+
     public static String getApiLineName(String value) {
         if (value == null) return "";
         int splitIndex = value.indexOf(API_LINE_SPLIT);

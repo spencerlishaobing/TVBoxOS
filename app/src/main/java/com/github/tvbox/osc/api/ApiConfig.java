@@ -9,15 +9,14 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import com.google.android.exoplayer2.util.UriUtil;
 import com.github.catvod.crawler.JarLoader;
 import com.github.catvod.crawler.JsLoader;
-import com.github.catvod.crawler.pyLoader;
 import com.github.catvod.crawler.Spider;
+import com.github.catvod.crawler.pyLoader;
 import com.github.catvod.crawler.python.IPyLoader;
 import com.github.tvbox.osc.base.App;
-import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.IJKCode;
+import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.LiveChannelItem;
 import com.github.tvbox.osc.bean.LiveSettingGroup;
 import com.github.tvbox.osc.bean.LiveSettingItem;
@@ -38,6 +37,7 @@ import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.Proxy;
 import com.github.tvbox.osc.util.VideoParseRuler;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
+import com.google.android.exoplayer2.util.UriUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -660,6 +660,8 @@ public class ApiConfig {
         Hawk.put(HawkConfig.API_LINE_SOURCE, apiUrl);
         Hawk.put(HawkConfig.API_URL, firstApi);
         HistoryHelper.setApiHistory(apiUrl);
+        // 自动注册为多仓，供首页线路功能切换
+        HistoryHelper.addApiSource(HistoryHelper.buildApiLine("", apiUrl));
         String liveApiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
         if (TextUtils.isEmpty(liveApiUrl) || liveApiUrl.equals(apiUrl)) {
             Hawk.put(HawkConfig.LIVE_API_URL, firstApi);

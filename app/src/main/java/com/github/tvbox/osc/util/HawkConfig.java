@@ -12,6 +12,7 @@ public class HawkConfig {
     public static final String API_HISTORY = "api_history";
     public static final String API_LINE_LIST = "api_line_list";
     public static final String API_LINE_SOURCE = "api_line_source";
+    public static final String API_SOURCE_LIST = "api_source_list";
     public static final String LIVE_API_HISTORY = "live_api_history";
     public static final String EPG_HISTORY = "epg_history";
     public static final String HOME_API = "home_api";
