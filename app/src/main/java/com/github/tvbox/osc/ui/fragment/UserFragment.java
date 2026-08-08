@@ -196,13 +196,23 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                     assert vodInfo != null;
                     RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
                     Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2)) {
+                    // 历史记录模式：点击继续观看
                     Bundle bundle = new Bundle();
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
                     bundle.putString("title", vod.name);
                     bundle.putString("picture", vod.pic);
                     jumpActivity(DetailActivity.class, bundle);
+                } else {
+                    // 其他模式：以节目名为关键字进入搜索结果界面
+                    Bundle bundle = new Bundle();
+                    bundle.putString("title", vod.name);
+                    if (Hawk.get(HawkConfig.FAST_SEARCH_MODE, true)) {
+                        jumpActivity(FastSearchActivity.class, bundle);
+                    } else {
+                        jumpActivity(SearchActivity.class, bundle);
+                    }
                 }
             }
         });
