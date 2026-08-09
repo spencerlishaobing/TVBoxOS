@@ -1399,6 +1399,12 @@
         ]
       },
       {
+        "name": "风云音乐高清",
+        "urls": [
+          "http://39.164.143.66:13994/tsfile/live/1148_1.m3u8"
+        ]
+      },
+      {
         "name": "CCTV兵器科技",
         "urls": [
           "http://63.141.230.178:82/gslb/zbdq5.m3u8?id=gfjs"
@@ -2158,6 +2164,17 @@
           "http://218.206.221.78:9003/hls/81/index.m3u8",
           "http://iptv.huuc.edu.cn/hls/jshd.m3u8",
           "http://[2409:8087:1a15:10d1::36]/ottrrs.hl.chinamobile.com/PLTV/88888888/8/3221225613/1.m3u8"
+        ]
+      },
+      {
+        "name": "苏州4K",
+        "urls": [
+          "https://tylive.kan0512.com/norecord/csztv4k_4k.m3u8",
+          "http://tylive.kan0512.com/norecord/csztv4k_4k.flv",
+          "http://tylive.kan0512.com/norecord/csztv4k_4k.m3u8",
+          "http://tylive.kan0512.com/norecord/csztv4k_fhd.m3u8",
+          "http://live-auth.51kandianshi.com/szgd/csztv4k_fhd.m3u8",
+          "https://tylive.kan0512.com/norecord/csztv4k_fhd.m3u8"
         ]
       },
       {
@@ -3593,36 +3610,6 @@
         ]
       },
       {
-        "name": "苏州4K",
-        "urls": [
-          "https://tylive.kan0512.com/norecord/csztv4k_4k.m3u8",
-          "http://tylive.kan0512.com/norecord/csztv4k_4k.flv",
-          "http://tylive.kan0512.com/norecord/csztv4k_4k.m3u8",
-          "http://tylive.kan0512.com/norecord/csztv4k_fhd.m3u8",
-          "http://live-auth.51kandianshi.com/szgd/csztv4k_fhd.m3u8",
-          "https://tylive.kan0512.com/norecord/csztv4k_fhd.m3u8"
-        ]
-      },
-      {
-        "name": "长影",
-        "urls": [
-          "http://tpc.x3322.net:9901/tsfile/live/1010_1.m3u8"
-        ]
-      },
-      {
-        "name": "风云音乐高清",
-        "urls": [
-          "http://39.164.143.66:13994/tsfile/live/1148_1.m3u8"
-        ]
-      },
-      {
-        "name": "第一财经",
-        "urls": [
-          "http://satellitepull.cnr.cn/live/wx32dycjgb/playlist.m3u8"
-        ]
-      },
-
-      {
         "name": "Khushboo Bangla",
         "urls": [
           "https://cdn-4.pishow.tv/live/1473/master.m3u8"
@@ -3635,18 +3622,6 @@
           "http://1.94.31.214/php/hntv.php?id=wwbk",
           "http://150.158.10.195:80/dxxw.php?id=wwbk",
           "http://49.235.65.250:600/henan/henan.php?id=wwbk"
-        ]
-      },
-      {
-        "name": "每日经济",
-        "urls": [
-          "http://swiftplay.hxkjmedia.com/tv/spbW.m3u8"
-        ]
-      },
-      {
-        "name": "中国|CGTN",
-        "urls": [
-          "https://english-livebkali.cgtn.com/live/encgtn_0.m3u8"
         ]
       },
       {
@@ -3673,35 +3648,6 @@
         "name": "华文七套",
         "urls": [
           "https://arabic-livews.cgtn.com/hls/LSveq57bErWLinBnxosqjisZ220802LSTefTAS9zc9mpU08y3np9TH220802cd/playlist.m3u8"
-        ]
-      },
-      {
-        "name": "CGTN俄语",
-        "urls": [
-          "http://russian-livews.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd.m3u8",
-          "http://106.53.99.30/tv/api.php?id=cgtnr"
-        ]
-      },
-      {
-        "name": "CGTN法语",
-        "urls": [
-          "http://espanol-liveali.cgtn.com/hls/LSveOGBaBw41Ea7ukkVAUdKQ220802LSTexu6xAuFH8VZNBLE1ZNEa220802cd.m3u8",
-          "https://francais-livews.cgtn.com/hls/LSvev95OuFZtKLc6CeKEFYXj220802LSTeV6PO0Ut9r71Uq3k5goCA220802cd/playlist.m3u8",
-          "http://francais-livews.cgtn.com/hls/LSvev95OuFZtKLc6CeKEFYXj220802LSTeV6PO0Ut9r71Uq3k5goCA220802cd.m3u8"
-        ]
-      },
-      {
-        "name": "CGTN",
-        "urls": [
-          "https://english-liveali.cgtn.com/hls/yypdyyctzb/yypdyyctzbcd/playlist.m3u8",
-          "http://39.152.103.17:8089/tsfile/live/1103_1.m3u8",
-          "http://39.152.103.17:8089/tsfile/live/1107_1.m3u8"
-        ]
-      },
-      {
-        "name": "CGTN Русский",
-        "urls": [
-          "https://russian-liveali.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd/playlist.m3u8"
         ]
       },
       {
@@ -3732,19 +3678,6 @@
         ]
       },
       {
-        "name": "中国教育",
-        "urls": [
-          "http://39.165.150.207:19901/tsfile/live/1000_1.m3u8"
-        ]
-      },
-      {
-        "name": "中国教育—1",
-        "urls": [
-          "http://39.164.143.66:13994/tsfile/live/1002_1.m3u8",
-          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226494/1.m3u8?"
-        ]
-      },
-      {
         "name": "发现之旅",
         "urls": [
           "http://hlsztemgsplive.miguvideo.com:8080/wd_r3/cnr/faxianzhilv/1000/index.m3u8?msisdn=20260807084444823fb6f4207c454688acd8b51beeb195&mdspid=&spid=699004&netType=0&sid=5500212893&pid=2028597139&timestamp=20260807084444&Channel_ID=0116_2600000900-99000-201600010010027&ProgramID=624878970&ParentNodeID=-99&assertID=5500212893&client_ip=218.28.233.106&SecurityKey=20260807084444&promotionId=&mvid=5100001701&mcid=500020&playurlVersion=ZQ-A1-9.8.0-SNAPSHOT&userid=&jmhm=&videocodec=h264&appCode=miguvideo_android&bean=mgspad&tid=android&conFee=0&encrypt=0599d8050f4da83f40bc3bae52c9b821"
@@ -3763,31 +3696,29 @@
         ]
       },
       {
-        "name": "中国教育3台",
+        "name": "CETV1",
+        "urls": [
+          "http://39.165.150.207:19901/tsfile/live/1000_1.m3u8",
+          "http://hlsztemgsplive.miguvideo.com:8080/migu/kailu/cetv1/50/20240709/index.m3u8?msisdn=202608070844552d1be563bb60444da719e88c11cb4973&mdspid=&spid=699004&netType=0&sid=5910022150&pid=2028597139&timestamp=20260807084455&Channel_ID=0116_2600000900-99000-201600010010027&ProgramID=923287154&ParentNodeID=-99&assertID=5910022150&client_ip=218.28.233.106&SecurityKey=20260807084455&promotionId=&mvid=5900006636&mcid=500020&playurlVersion=ZQ-A1-9.8.0-SNAPSHOT&userid=&jmhm=&videocodec=h264&appCode=miguvideo_android&bean=mgspad&tid=android&conFee=0&encrypt=d7f1c0255241b5550e94e1e5e9562861",
+          "http://218.206.221.78:9003/hls/19/index.m3u8",
+          "http://[2409:8087:1e02:20::22]/PLTV/11/224/3221225775/index.m3u8",
+          "http://[2409:8087:1e02:20::23]/PLTV/11/224/3221225775/index.m3u8",
+          "http://[2409:8087:1e02:20::25]/PLTV/11/224/3221225775/index.m3u8",
+          "http://39.164.143.66:13994/tsfile/live/1002_1.m3u8",
+          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226494/1.m3u8?"
+        ]
+      },
+      {
+        "name": "CETV3",
         "urls": [
           "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226577/1.m3u8?GuardEncType=2&accountinfo=%7E%7EV2.0%7EhE2Z89HKgsQOlN9opVn1iw%7E_eNUbgU9sJGUcVVduOMKhafLvQUgE_zlz_7pvDimJNN03yUnk4zBVk1bynPPL3hZ%2CEND"
         ]
       },
       {
-        "name": "CETV1",
-        "urls": [
-          "http://hlsztemgsplive.miguvideo.com:8080/migu/kailu/cetv1/50/20240709/index.m3u8?msisdn=202608070844552d1be563bb60444da719e88c11cb4973&mdspid=&spid=699004&netType=0&sid=5910022150&pid=2028597139&timestamp=20260807084455&Channel_ID=0116_2600000900-99000-201600010010027&ProgramID=923287154&ParentNodeID=-99&assertID=5910022150&client_ip=218.28.233.106&SecurityKey=20260807084455&promotionId=&mvid=5900006636&mcid=500020&playurlVersion=ZQ-A1-9.8.0-SNAPSHOT&userid=&jmhm=&videocodec=h264&appCode=miguvideo_android&bean=mgspad&tid=android&conFee=0&encrypt=d7f1c0255241b5550e94e1e5e9562861",
-          "http://218.206.221.78:9003/hls/19/index.m3u8",
-          "http://[2409:8087:1e02:20::22]/PLTV/11/224/3221225775/index.m3u8",
-          "http://[2409:8087:1e02:20::23]/PLTV/11/224/3221225775/index.m3u8",
-          "http://[2409:8087:1e02:20::25]/PLTV/11/224/3221225775/index.m3u8"
-        ]
-      },
-      {
         "name": "CETV2",
         "urls": [
+          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226537/1.m3u8?GuardEncType=2&accountinfo=%7E%7EV2.0%7E7AxXs4eTU2oiWrhopr9sHw%7E_eNUbgU9sJGUcVVduOMKhafLvQUgE_zlz_7pvDimJNNxsM0Bor098BJglrhfEQTl%2CEND",
           "http://hlsztemgsplive.miguvideo.com:8080/migu/kailu/cetv2/50/20240709/index.m3u8?msisdn=2026080708445508665dfea398482cba08246d055ef3b4&mdspid=&spid=699004&netType=0&sid=5910022152&pid=2028597139&timestamp=20260807084455&Channel_ID=0116_2600000900-99000-201600010010027&ProgramID=923287211&ParentNodeID=-99&assertID=5910022152&client_ip=218.28.233.106&SecurityKey=20260807084455&promotionId=&mvid=5900006638&mcid=500020&playurlVersion=ZQ-A1-9.8.0-SNAPSHOT&userid=&jmhm=&videocodec=h264&appCode=miguvideo_android&bean=mgspad&tid=android&conFee=0&encrypt=526324c69a05189162c0bacab8b6cd84"
-        ]
-      },
-      {
-        "name": "中国教育4台",
-        "urls": [
-          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226997/1.m3u8?GuardEncType=2&accountinfo=%7E%7EV2.0%7EAw_OvjRgJVjtlaOa0dcgzg%7EtP4-l0lmSfjwLWEfK_el1vH_mv-s1zo4AQJwdedaVwG9xkuFTDg8J26cwOrNJzn20BErrHdLhuZ9EzLUCD3PMW-OMx4MGteHV2vLeW6BqoY%2CEND"
         ]
       },
       {
@@ -3795,13 +3726,8 @@
         "urls": [
           "http://hlsztemgsplive.miguvideo.com:8080/migu/kailu/cetv4/50/20240709/index.m3u8?msisdn=202608070844559b05ff4efd8c47af853c4970e572612e&mdspid=&spid=699004&netType=0&sid=5910022154&pid=2028597139&timestamp=20260807084455&Channel_ID=0116_2600000900-99000-201600010010027&ProgramID=923287339&ParentNodeID=-99&assertID=5910022154&client_ip=218.28.233.106&SecurityKey=20260807084455&promotionId=&mvid=5900006640&mcid=500020&playurlVersion=ZQ-A1-9.8.0-SNAPSHOT&userid=&jmhm=&videocodec=h264&appCode=miguvideo_android&bean=mgspad&tid=android&conFee=0&encrypt=e4d0d7a0fcb2b5fd6c34b857c788a4a3",
           "http://39.152.103.17:8089/tsfile/live/1092_1.m3u8",
-          "http://[2409:8087:1e02:20::1a]/PLTV/11/224/3221226153/index.m3u8"
-        ]
-      },
-      {
-        "name": "中国教育2台",
-        "urls": [
-          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226537/1.m3u8?GuardEncType=2&accountinfo=%7E%7EV2.0%7E7AxXs4eTU2oiWrhopr9sHw%7E_eNUbgU9sJGUcVVduOMKhafLvQUgE_zlz_7pvDimJNNxsM0Bor098BJglrhfEQTl%2CEND"
+          "http://[2409:8087:1e02:20::1a]/PLTV/11/224/3221226153/index.m3u8",
+          "http://[2409:8087:8:21::18]:6610/otttv.bj.chinamobile.com/PLTV/88888888/224/3221226997/1.m3u8?GuardEncType=2&accountinfo=%7E%7EV2.0%7EAw_OvjRgJVjtlaOa0dcgzg%7EtP4-l0lmSfjwLWEfK_el1vH_mv-s1zo4AQJwdedaVwG9xkuFTDg8J26cwOrNJzn20BErrHdLhuZ9EzLUCD3PMW-OMx4MGteHV2vLeW6BqoY%2CEND"
         ]
       },
       {
@@ -3825,7 +3751,36 @@
       {
         "name": "CGTN西语",
         "urls": [
-          "http://8.138.7.223/【公众号：榴芒电视】/cgtne.m3u8"
+          "http://8.138.7.223/cgtne.m3u8"
+        ]
+      },
+      {
+        "name": "CGTN俄语",
+        "urls": [
+          "http://russian-livews.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd.m3u8",
+          "http://106.53.99.30/tv/api.php?id=cgtnr"
+        ]
+      },
+      {
+        "name": "CGTN法语",
+        "urls": [
+          "http://espanol-liveali.cgtn.com/hls/LSveOGBaBw41Ea7ukkVAUdKQ220802LSTexu6xAuFH8VZNBLE1ZNEa220802cd.m3u8",
+          "https://francais-livews.cgtn.com/hls/LSvev95OuFZtKLc6CeKEFYXj220802LSTeV6PO0Ut9r71Uq3k5goCA220802cd/playlist.m3u8",
+          "http://francais-livews.cgtn.com/hls/LSvev95OuFZtKLc6CeKEFYXj220802LSTeV6PO0Ut9r71Uq3k5goCA220802cd.m3u8"
+        ]
+      },
+      {
+        "name": "CGTN",
+        "urls": [
+          "https://english-liveali.cgtn.com/hls/yypdyyctzb/yypdyyctzbcd/playlist.m3u8",
+          "http://39.152.103.17:8089/tsfile/live/1103_1.m3u8",
+          "http://39.152.103.17:8089/tsfile/live/1107_1.m3u8"
+        ]
+      },
+      {
+        "name": "CGTN Русский",
+        "urls": [
+          "https://russian-liveali.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd/playlist.m3u8"
         ]
       }
     ]
