@@ -1393,15 +1393,10 @@
       {
         "name": "CCTV风云音乐",
         "urls": [
+          "http://39.164.143.66:13994/tsfile/live/1148_1.m3u8",
           "http://38.75.136.137:98/gslb/dsdqpub/fyyy.m3u8?auth=testpub",
           "http://63.141.230.178:82/gslb/zbdq5.m3u8?id=fyyy",
           "http://sh.lnott.top:880/dx73.m3u8"
-        ]
-      },
-      {
-        "name": "风云音乐高清",
-        "urls": [
-          "http://39.164.143.66:13994/tsfile/live/1148_1.m3u8"
         ]
       },
       {

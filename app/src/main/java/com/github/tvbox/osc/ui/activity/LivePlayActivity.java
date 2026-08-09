@@ -1807,6 +1807,7 @@ public class LivePlayActivity extends BaseActivity {
         }
 
         channel_Name = currentLiveChannelItem;
+        saveLiveChannelSourceCache();
         currentLiveLookBackIndex=-1;
         epgListAdapter.setSelectedEpgIndex(-1);
         isSHIYI=false;
@@ -2736,6 +2737,40 @@ public class LivePlayActivity extends BaseActivity {
         return -1;
     }
 
+    //按直播配置隔离的频道源缓存key，默认内置直播文件使用基础key
+    private String getLiveChannelSourceCacheKey() {
+        String liveApiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
+        if (liveApiUrl == null || liveApiUrl.isEmpty()) {
+            liveApiUrl = Hawk.get(HawkConfig.API_URL, "");
+        }
+        if (liveApiUrl == null || liveApiUrl.isEmpty()) {
+            return HawkConfig.LIVE_CHANNEL_SOURCE_CACHE;
+        }
+        return HawkConfig.LIVE_CHANNEL_SOURCE_CACHE + "_" + liveApiUrl;
+    }
+
+    //缓存当前频道选中的源索引，供重启后恢复
+    private void saveLiveChannelSourceCache() {
+        if (currentLiveChannelItem == null || currentLiveChannelItem.getChannelName() == null || currentLiveChannelItem.getSourceNum() <= 0)
+            return;
+        JsonObject sourceCache = Hawk.get(getLiveChannelSourceCacheKey(), new JsonObject());
+        if (sourceCache == null) sourceCache = new JsonObject();
+        sourceCache.addProperty(currentLiveChannelItem.getChannelName(), currentLiveChannelItem.getSourceIndex());
+        Hawk.put(getLiveChannelSourceCacheKey(), sourceCache);
+    }
+
+    //读取频道记忆的源索引，无记忆时返回-1（默认选中第一个源）
+    private int getCachedLiveChannelSourceIndex(String channelName) {
+        if (channelName == null) return -1;
+        JsonObject sourceCache = Hawk.get(getLiveChannelSourceCacheKey(), new JsonObject());
+        if (sourceCache == null || !sourceCache.has(channelName)) return -1;
+        try {
+            return sourceCache.get(channelName).getAsInt();
+        } catch (Throwable th) {
+            return -1;
+        }
+    }
+
     private void refreshLiveChannelListAndPlay(String channelName, int sourceIndex) {
         refreshingLiveChannelList = true;
         pendingLiveRefreshChannelName = channelName;
@@ -3045,6 +3080,17 @@ public class LivePlayActivity extends BaseActivity {
                 if (lastChannelGroupIndex == -1)
                     lastChannelGroupIndex = 0;
                 lastLiveChannelIndex = 0;
+            }
+        }
+        //恢复每个频道记忆的源索引，无记忆的频道保持默认选中第一个源
+        for (LiveChannelGroup liveChannelGroup : liveChannelGroupList) {
+            ArrayList<LiveChannelItem> groupChannels = liveChannelGroup.getLiveChannels();
+            if (groupChannels == null) continue;
+            for (LiveChannelItem liveChannelItem : groupChannels) {
+                int cachedSourceIndex = getCachedLiveChannelSourceIndex(liveChannelItem.getChannelName());
+                if (cachedSourceIndex >= 0 && cachedSourceIndex < liveChannelItem.getSourceNum()) {
+                    liveChannelItem.setSourceIndex(cachedSourceIndex);
+                }
             }
         }
         if (lastLiveChannelItem != null && sourceIndex >= 0 && lastLiveChannelItem.getSourceNum() > 0) {
