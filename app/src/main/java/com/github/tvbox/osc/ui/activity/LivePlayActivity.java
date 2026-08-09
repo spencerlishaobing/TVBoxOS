@@ -2,7 +2,6 @@ package com.github.tvbox.osc.ui.activity;
 
 import static xyz.doikki.videoplayer.util.PlayerUtils.safeTimeMs;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.IntEvaluator;
@@ -60,14 +59,12 @@ import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.EpgUtil;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
-import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.gson.JsonArray;
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.JsonObject;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
@@ -76,6 +73,7 @@ import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,7 +95,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -2832,18 +2829,51 @@ public class LivePlayActivity extends BaseActivity {
         });
     }
 
+    private void fallbackToBuiltInLive() {
+        ApiConfig.get().loadBuiltInLiveConfig(new ApiConfig.LoadConfigCallback() {
+            @Override
+            public void success() {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
+                        if (list.isEmpty()) {
+                            setEmptyLiveChannelList();
+                            return;
+                        }
+                        applyLiveChannelGroups(list);
+                    }
+                });
+            }
+
+            @Override
+            public void error(String msg) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setEmptyLiveChannelList();
+                    }
+                });
+            }
+
+            @Override
+            public void notice(String msg) {
+            }
+        });
+    }
+
     public void loadProxyLives(String url) {
         try {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
         } catch (Throwable th) {
             if (!url.startsWith("http://127.0.0.1")) {
-                setEmptyLiveChannelList();
+                fallbackToBuiltInLive();
                 return;
             }
         }
         if (!isValidLiveProxyUrl(url)) {
-            setEmptyLiveChannelList();
+            fallbackToBuiltInLive();
             return;
         }
         if (!refreshingLiveChannelList) {
@@ -2877,11 +2907,11 @@ public class LivePlayActivity extends BaseActivity {
                         e.printStackTrace();
                     } finally {
                         if (sortJson==null || sortJson.isEmpty()) {
-                            // 频道列表为空时，使用默认播放列表
+                            // 频道列表为空时，使用内置直播源
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    setEmptyLiveChannelList();
+                                    fallbackToBuiltInLive();
                                 }
                             });
                             return;
@@ -2894,7 +2924,7 @@ public class LivePlayActivity extends BaseActivity {
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    setEmptyLiveChannelList();
+                                    fallbackToBuiltInLive();
                                 }
                             });
                             return;
@@ -2935,7 +2965,7 @@ public class LivePlayActivity extends BaseActivity {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                setEmptyLiveChannelList();
+                                fallbackToBuiltInLive();
                             }
                         });
                         return;
@@ -2955,7 +2985,7 @@ public class LivePlayActivity extends BaseActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            setEmptyLiveChannelList();
+                            fallbackToBuiltInLive();
                         }
                     });
                 }

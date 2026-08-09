@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.bean;
 
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.util.HawkConfig;
@@ -20,7 +22,13 @@ public class LivePlayerManager {
     public void init(VideoView videoView) {
         try {
             currentApi=Hawk.get(HawkConfig.LIVE_API_URL,"");
-            defaultPlayerConfig.put("pl", Hawk.get(HawkConfig.LIVE_PLAY_TYPE, Hawk.get(HawkConfig.PLAY_TYPE, 0)));
+            int livePlayType = Hawk.get(HawkConfig.LIVE_PLAY_TYPE, -1);
+            if (livePlayType == 0 && Hawk.get(HawkConfig.PLAY_TYPE, 0) == 0) {
+                // 直播配置未指定播放器且跟随点播默认（系统播放器）时，直播默认用 IJK 硬解：
+                // 系统播放器对 m3u8 直播的缓冲控制差，容易周期性卡顿；用户主动选择的播放器存于频道级配置，不受此默认值影响
+                if (isArmDevice()) livePlayType = 1;
+            }
+            defaultPlayerConfig.put("pl", livePlayType);
             defaultPlayerConfig.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, "硬解码"));
             defaultPlayerConfig.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0));
             defaultPlayerConfig.put("sc", Hawk.get(HawkConfig.LIVE_PLAY_SCALE, 0));
@@ -100,6 +108,13 @@ public class LivePlayerManager {
             e.printStackTrace();
         }
         return playerTypeIndex;
+    }
+
+    private boolean isArmDevice() {
+        for (String abi : Build.SUPPORTED_ABIS) {
+            if (abi.startsWith("arm")) return true;
+        }
+        return false;
     }
 
     public int getLivePlayerScale() {

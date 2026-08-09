@@ -258,13 +258,15 @@ public class ApiConfig {
         });
     }
 
+    private static final String BUILT_IN_LIVE_ASSET = "live/builtin_live.json";
+
     public void loadLiveConfig(boolean useCache, LoadConfigCallback callback) {
         String apiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
         if (apiUrl.isEmpty()) {
             apiUrl = Hawk.get(HawkConfig.API_URL, "");
         }
         if (apiUrl.isEmpty()) {
-            callback.error("-1");
+            loadBuiltInLiveConfig(callback);
             return;
         }
         final String liveApiUrl = apiUrl;
@@ -290,7 +292,7 @@ public class ApiConfig {
                 try {
                     parseLiveConfigContent(liveApiUrl, json);
                     if (!hasLiveConfigResult()) {
-                        callback.error("直播配置解析失败");
+                        loadBuiltInLiveConfig(callback);
                         return;
                     }
                     loadedLiveConfigUrl = liveApiUrl;
@@ -298,7 +300,7 @@ public class ApiConfig {
                     callback.success();
                 } catch (Throwable th) {
                     th.printStackTrace();
-                    callback.error("直播配置解析失败");
+                    loadBuiltInLiveConfig(callback);
                 }
             }
 
@@ -316,9 +318,34 @@ public class ApiConfig {
                         th.printStackTrace();
                     }
                 }
-                callback.error("直播配置拉取失败");
+                loadBuiltInLiveConfig(callback);
             }
         });
+    }
+
+    public void loadBuiltInLiveConfig(LoadConfigCallback callback) {
+        try {
+            InputStream is = App.getInstance().getAssets().open(BUILT_IN_LIVE_ASSET);
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String s;
+            while ((s = bReader.readLine()) != null) {
+                sb.append(s).append("\n");
+            }
+            bReader.close();
+            parseLiveConfigContent("builtin://live", sb.toString());
+            if (hasLiveConfigResult()) {
+                String apiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
+                if (apiUrl.isEmpty()) apiUrl = Hawk.get(HawkConfig.API_URL, "");
+                loadedLiveConfigUrl = apiUrl;
+                callback.success();
+            } else {
+                callback.error("-1");
+            }
+        } catch (Throwable th) {
+            th.printStackTrace();
+            callback.error("-1");
+        }
     }
 
     private boolean hasLiveConfigResult() {
