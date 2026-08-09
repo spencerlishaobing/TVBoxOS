@@ -3734,6 +3734,7 @@
       {
         "name": "CGTN西班牙国际",
         "urls": [
+          "http://8.138.7.223/cgtne.m3u8",
           "http://39.152.103.17:8089/tsfile/live/1106_1.m3u8"
         ]
       },
@@ -3744,16 +3745,11 @@
         ]
       },
       {
-        "name": "CGTN西语",
-        "urls": [
-          "http://8.138.7.223/cgtne.m3u8"
-        ]
-      },
-      {
         "name": "CGTN俄语",
         "urls": [
           "http://russian-livews.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd.m3u8",
-          "http://106.53.99.30/tv/api.php?id=cgtnr"
+          "http://106.53.99.30/tv/api.php?id=cgtnr",
+          "https://russian-liveali.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd/playlist.m3u8"
         ]
       },
       {
@@ -3770,12 +3766,6 @@
           "https://english-liveali.cgtn.com/hls/yypdyyctzb/yypdyyctzbcd/playlist.m3u8",
           "http://39.152.103.17:8089/tsfile/live/1103_1.m3u8",
           "http://39.152.103.17:8089/tsfile/live/1107_1.m3u8"
-        ]
-      },
-      {
-        "name": "CGTN Русский",
-        "urls": [
-          "https://russian-liveali.cgtn.com/hls/LSvexABhNipibK5KRuUkvHZ7220802LSTeze9o8tdFXMHsb1VosgoT220802cd/playlist.m3u8"
         ]
       }
     ]
