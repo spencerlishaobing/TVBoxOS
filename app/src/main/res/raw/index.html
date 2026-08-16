@@ -94,6 +94,52 @@
 												class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
 										</div>
 									</div>
+									<div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
+										<div class="weui-cell__hd"><label class="weui-label">推送线路</label></div>
+										<div class="weui-cell__bd weui-flex">
+											<input id="line_url"
+												class="weui-input weui-cell__control weui-cell__control_flex"
+												type="text" value="" placeholder="请输入线路(接口)地址..." />
+											<button onclick="pushLine(); return false;"
+												class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
+										</div>
+									</div>
+									<div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
+										<div class="weui-cell__hd"><label class="weui-label">推送仓库/多仓</label></div>
+										<div class="weui-cell__bd weui-flex">
+											<input id="store_name"
+												class="weui-input weui-cell__control weui-cell__control_flex"
+												type="text" value="" placeholder="仓库名称..." />
+										</div>
+									</div>
+									<div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
+										<div class="weui-cell__hd"><label class="weui-label">仓库地址</label></div>
+										<div class="weui-cell__bd weui-flex">
+											<input id="store_url"
+												class="weui-input weui-cell__control weui-cell__control_flex"
+												type="text" value="" placeholder="请输入仓库(多仓)地址..." />
+											<button onclick="pushStore(); return false;"
+												class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
+										</div>
+									</div>
+									<div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
+										<div class="weui-cell__hd"><label class="weui-label">推送直播源</label></div>
+										<div class="weui-cell__bd weui-flex">
+											<input id="live_name"
+												class="weui-input weui-cell__control weui-cell__control_flex"
+												type="text" value="" placeholder="直播源名称..." />
+										</div>
+									</div>
+									<div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
+										<div class="weui-cell__hd"><label class="weui-label">直播地址</label></div>
+										<div class="weui-cell__bd weui-flex">
+											<input id="live_url"
+												class="weui-input weui-cell__control weui-cell__control_flex"
+												type="text" value="" placeholder="请输入直播源地址..." />
+											<button onclick="pushLiveSource(); return false;"
+												class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

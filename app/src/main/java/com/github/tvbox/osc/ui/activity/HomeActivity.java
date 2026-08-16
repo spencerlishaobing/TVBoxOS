@@ -714,6 +714,15 @@ public class HomeActivity extends BaseActivity {
             }
         } else if (event.type == RefreshEvent.TYPE_HOME_SOURCE_CHANGE) {
             refreshHome(false);
+        } else if (event.type == RefreshEvent.TYPE_API_URL_CHANGE) {
+            // 远程推送接口地址：重启首页以加载新配置
+            refreshHome(true);
+        } else if (event.type == RefreshEvent.TYPE_PUSH_STORE) {
+            // 远程推送仓库：请求该仓库线路列表弹窗（影视仓 qp0(14) 行为）
+            String url = (String) event.obj;
+            if (url != null && !url.isEmpty()) {
+                loadStoreLines(url);
+            }
         }
     }
 

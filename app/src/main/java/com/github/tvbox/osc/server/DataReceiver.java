@@ -20,4 +20,14 @@ public interface DataReceiver {
     void onDanmuApiReceived(String url);
 
     void onPushReceived(String url);
+
+    /**
+     * 推送仓库/多仓（影视仓 do=pushStore）
+     */
+    void onPushStoreReceived(String name, String url);
+
+    /**
+     * 推送直播源（影视仓 do=livePush）
+     */
+    void onLiveSourceReceived(String name, String url);
 }

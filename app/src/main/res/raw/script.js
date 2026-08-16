@@ -18,6 +18,18 @@ function push() {
     doAction('push', { url: $('#push_url').val() });
 }
 
+function pushLine() {
+    doAction('api', { url: $('#line_url').val() });
+}
+
+function pushStore() {
+    doAction('pushStore', { pushStore_name: $('#store_name').val(), pushStore_url: $('#store_url').val() });
+}
+
+function pushLiveSource() {
+    doAction('livePush', { live_name: $('#live_name').val(), live_address: $('#live_url').val() });
+}
+
 function doAction(action, kv) {
     kv['do'] = action;
     // alert(JSON.stringify(kv));
