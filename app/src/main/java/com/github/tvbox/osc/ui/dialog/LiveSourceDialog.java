@@ -52,6 +52,8 @@ public class LiveSourceDialog extends BaseDialog {
         super(activity);
         setContentView(R.layout.live_source_dialog_select);
         setCanceledOnTouchOutside(false);
+        // 点击空白区域关闭弹窗
+        enableOutsideTouchDismiss(R.id.content_view);
         initView();
         loadList();
     }

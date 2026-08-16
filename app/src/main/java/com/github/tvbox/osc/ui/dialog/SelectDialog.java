@@ -19,6 +19,8 @@ public class SelectDialog<T> extends BaseDialog {
     public SelectDialog(@NonNull @NotNull Context context) {
         super(context);
         setContentView(R.layout.dialog_select);
+        // 点击空白区域关闭弹窗
+        enableOutsideTouchDismiss(R.id.cl_root);
     }
 
     public SelectDialog(@NonNull @NotNull Context context, int resId) {

@@ -56,6 +56,8 @@ public class MoreSourceDialog extends BaseDialog {
         this.activity = activity;
         setContentView(R.layout.more_source_dialog_select);
         setCanceledOnTouchOutside(false);
+        // 点击空白区域关闭弹窗
+        enableOutsideTouchDismiss(R.id.content_view);
         initView();
         loadList();
     }

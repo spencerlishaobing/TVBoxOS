@@ -3,8 +3,10 @@ package com.github.tvbox.osc.ui.dialog;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -48,6 +50,28 @@ public class BaseDialog extends Dialog {
         Activity activity = (Activity) context;
         return activity.isFinishing()
                 || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed());
+    }
+
+    /**
+     * 点击目标视图之外的空白区域时关闭弹窗（windowFullscreen 时系统 setCanceledOnTouchOutside 无效）
+     */
+    protected void enableOutsideTouchDismiss(final int targetViewId) {
+        if (getWindow() == null) return;
+        final View target = findViewById(targetViewId);
+        if (target == null) return;
+        getWindow().getDecorView().setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN && isShowing()) {
+                    Rect rect = new Rect();
+                    target.getGlobalVisibleRect(rect);
+                    if (!rect.contains((int) event.getRawX(), (int) event.getRawY())) {
+                        dismiss();
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     private void hideSysBar() {
