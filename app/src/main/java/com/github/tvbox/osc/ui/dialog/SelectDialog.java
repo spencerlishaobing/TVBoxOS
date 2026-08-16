@@ -6,12 +6,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
-import com.owen.tvrecyclerview.widget.GridLayoutManager;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +33,25 @@ public class SelectDialog<T> extends BaseDialog {
 
     public void setTip(String tip) {
         ((TextView) findViewById(R.id.title)).setText(tip);
+    }
+    /**
+     * 设置删除回调（影视仓风格：列表项显示删除按钮，null 则隐藏）
+     */
+    public void setDelInterface(SelectDialogAdapter.SelectDelInterface delInterface) {
+        TvRecyclerView tvRecyclerView = findViewById(R.id.list);
+        if (tvRecyclerView.getAdapter() instanceof SelectDialogAdapter) {
+            ((SelectDialogAdapter) tvRecyclerView.getAdapter()).setDelInterface(delInterface);
+        }
+    }
+
+    /**
+     * 设置删除回调并按项控制删除按钮显隐（影视仓 showDelete）
+     */
+    public void setDelInterface(SelectDialogAdapter.SelectDelInterface delInterface, SelectDialogAdapter.SelectDelVisibleInterface delVisibleInterface) {
+        TvRecyclerView tvRecyclerView = findViewById(R.id.list);
+        if (tvRecyclerView.getAdapter() instanceof SelectDialogAdapter) {
+            ((SelectDialogAdapter) tvRecyclerView.getAdapter()).setDelInterface(delInterface, delVisibleInterface);
+        }
     }
 
     public void setAdapter(SelectDialogAdapter.SelectDialogInterface<T> sourceBeanSelectDialogInterface,

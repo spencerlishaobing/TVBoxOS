@@ -1,6 +1,5 @@
 package com.github.tvbox.osc.ui.fragment;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,6 +7,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,8 +22,11 @@ import com.github.tvbox.osc.api.DanmakuApi;
 import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.IJKCode;
+import com.github.tvbox.osc.bean.LiveSourceBean;
+import com.github.tvbox.osc.bean.MoreSourceBean;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.event.RefreshEvent;
+import com.github.tvbox.osc.ui.activity.HomeActivity;
 import com.github.tvbox.osc.ui.activity.LocalFileActivity;
 import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.adapter.ApiHistoryDialogAdapter;
@@ -32,7 +35,9 @@ import com.github.tvbox.osc.ui.dialog.AboutDialog;
 import com.github.tvbox.osc.ui.dialog.ApiDialog;
 import com.github.tvbox.osc.ui.dialog.ApiHistoryDialog;
 import com.github.tvbox.osc.ui.dialog.BackupDialog;
+import com.github.tvbox.osc.ui.dialog.ConfigDialog;
 import com.github.tvbox.osc.ui.dialog.DanmuApiDialog;
+import com.github.tvbox.osc.ui.dialog.LiveSourceDialog;
 import com.github.tvbox.osc.ui.dialog.SearchRemoteTvDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.XWalkInitDialog;
@@ -97,6 +102,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private TextView tvIjkCachePlay;
     private TextView tvHomeDefaultShow;
     private ApiDialog apiDialog;
+    private TextView tvLiveApi;
     private boolean selectLocalLive;
     private TextView tvDanmuOpenText;
     private TextView tvDanmuApiText;
@@ -142,6 +148,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvApi = findViewById(R.id.tvApi);
         tvApiLine = findViewById(R.id.tvApiLine);
         tvHomeApi = findViewById(R.id.tvHomeApi);
+        tvLiveApi = findViewById(R.id.tvLiveApi);
+        refreshLiveApiText();
         tvDns = findViewById(R.id.tvDns);
         tvHomeRec = findViewById(R.id.tvHomeRec);
         tvHistoryNum = findViewById(R.id.tvHistoryNum);
@@ -151,7 +159,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvMediaCodec.setText(Hawk.get(HawkConfig.IJK_CODEC, "硬解码"));
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "已打开" : "已关闭");
         tvParseWebView.setText(Hawk.get(HawkConfig.PARSE_WEBVIEW, true) ? "系统自带" : "XWalkView");
-        tvApi.setText(Hawk.get(HawkConfig.API_URL, ""));
+        refreshApiText();
         refreshApiLineText();
 
         tvDns.setText(OkGoHelper.dnsHttpsList.get(Hawk.get(HawkConfig.DOH_URL, 0)));
@@ -321,41 +329,62 @@ public class ModelSettingFragment extends BaseLazyFragment {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                apiDialog = new ApiDialog(mActivity);
-                ApiDialog dialog = apiDialog;
-                EventBus.getDefault().register(dialog);
-                dialog.setOnListener(new ApiDialog.OnListener() {
+                // 影视仓：配置地址 → 仓库列表 → 点击仓库 → 该仓库线路列表弹窗
+                if (mActivity instanceof HomeActivity) {
+                    ((HomeActivity) mActivity).showMoreSourceDialog();
+                }
+            }
+        });
+        findViewById(R.id.llApi).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // 影视仓：配置地址长按弹配置弹窗
+                ConfigDialog dialog = new ConfigDialog(mActivity);
+                dialog.setOnListener(new ConfigDialog.OnListener() {
                     @Override
-                    public void onchange(String api) {
+                    public void onConfirm(String name, String url) {
                         String oldApi = Hawk.get(HawkConfig.API_URL, "");
-                        Hawk.put(HawkConfig.API_URL, api);
-                        if (!HistoryHelper.isApiLineHistory(api)) {
+                        Hawk.put(HawkConfig.API_URL, url);
+                        if (!HistoryHelper.isApiLineHistory(url)) {
                             HistoryHelper.clearApiLineList();
                         }
-                        tvApi.setText(api);
+                        refreshApiText();
                         refreshApiLineText();
-                        if (!oldApi.equals(api)) {
+                        if (!oldApi.equals(url)) {
                             restartAppAfterConfigChanged();
                         }
                     }
-
                     @Override
-                    public void onLocalConfig(boolean live) {
-                        openLocalConfig(live);
+                    public void onCancel() {
                     }
                 });
-                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                dialog.show();
+                return true;
+            }
+        });
+        findViewById(R.id.llLiveApi).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                LiveSourceDialog dialog = new LiveSourceDialog(mActivity);
+                dialog.setOnListener(new LiveSourceDialog.OnListener() {
                     @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        ((BaseActivity) mActivity).hideSysBar();
-                        EventBus.getDefault().unregister(dialog);
-                        apiDialog = null;
+                    public void onConfirm(String name, String url) {
+                        String oldLiveApi = Hawk.get(HawkConfig.LIVE_API_URL, "");
+                        Hawk.put(HawkConfig.LIVE_API_URL, url);
+                        HistoryHelper.setLiveApiHistory(url);
+                        refreshLiveApiText();
+                        if (!oldLiveApi.equals(url)) {
+                            restartAppAfterConfigChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancel() {
                     }
                 });
                 dialog.show();
             }
         });
-
         findViewById(R.id.llApiHistory).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -378,7 +407,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                         Hawk.put(HawkConfig.API_URL, value);
                         Hawk.put(HawkConfig.LIVE_API_URL, value);
                         HistoryHelper.setLiveApiHistory(value);
-                        tvApi.setText(value);
+                        refreshApiText();
                         refreshApiLineText();
                         dialog.dismiss();
                         if (!oldApi.equals(value)) {
@@ -400,7 +429,10 @@ public class ModelSettingFragment extends BaseLazyFragment {
             public void onClick(View v) {
                 ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
                 if (apiLines.isEmpty()) {
-                    Toast.makeText(mContext, "线路列表为空", Toast.LENGTH_SHORT).show();
+                    // 影视仓 dy0 逻辑：无线路 → 有选中仓库请求线路列表，否则弹仓库列表
+                    if (mActivity instanceof HomeActivity) {
+                        ((HomeActivity) mActivity).showLineSwitch();
+                    }
                     return;
                 }
                 String current = Hawk.get(HawkConfig.API_URL, "");
@@ -424,7 +456,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                         Hawk.put(HawkConfig.API_URL, newApi);
                         Hawk.put(HawkConfig.LIVE_API_URL, newApi);
                         HistoryHelper.setLiveApiHistory(newApi);
-                        tvApi.setText(newApi);
+                        refreshApiText();
                         refreshApiLineText();
                         dialog.dismiss();
                         if (!oldApi.equals(newApi)) {
@@ -841,6 +873,30 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 restartApp();
             }
         }, 2500);
+    }
+
+    private void refreshApiText() {
+        if (tvApi == null) return;
+        MoreSourceBean selected = Hawk.get(HawkConfig.CUSTOM_STORE_HOUSE_SELECTED, null);
+        String apiUrl = Hawk.get(HawkConfig.API_URL, "");
+        if (selected != null && !TextUtils.isEmpty(selected.getSourceName())
+                && TextUtils.equals(selected.getSourceUrl(), apiUrl)) {
+            tvApi.setText(selected.getSourceName());
+        } else {
+            tvApi.setText(apiUrl);
+        }
+    }
+
+    private void refreshLiveApiText() {
+        if (tvLiveApi == null) return;
+        LiveSourceBean current = Hawk.get(HawkConfig.LIVE_SOURCE_URL_CURRENT, null);
+        if (current != null && !TextUtils.isEmpty(current.getSourceName())) {
+            tvLiveApi.setText(current.getSourceName());
+        } else {
+            String liveUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
+            if (TextUtils.isEmpty(liveUrl)) liveUrl = Hawk.get(HawkConfig.API_URL, "");
+            tvLiveApi.setText(liveUrl);
+        }
     }
 
     private void refreshApiLineText() {

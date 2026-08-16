@@ -1,7 +1,6 @@
 package com.github.tvbox.osc.ui.adapter;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +34,20 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         String getDisplay(T val);
     }
 
+    /**
+     * 删除回调（影视仓风格：列表项带删除按钮，仅设置后显示）
+     */
+    public interface SelectDelInterface<T> {
+        void del(T value, int pos);
+    }
+
+    /**
+     * 按项控制删除按钮是否显示（影视仓 showDelete）
+     */
+    public interface SelectDelVisibleInterface<T> {
+        boolean showDel(T value);
+    }
+
 
     public static DiffUtil.ItemCallback<String> stringDiff = new DiffUtil.ItemCallback<String>() {
 
@@ -56,9 +69,29 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
 
     private SelectDialogInterface dialogInterface;
 
+    private SelectDelInterface delInterface = null;
+
+    private SelectDelVisibleInterface delVisibleInterface = null;
+
     public SelectDialogAdapter(SelectDialogInterface dialogInterface, DiffUtil.ItemCallback diffCallback) {
         super(diffCallback);
         this.dialogInterface = dialogInterface;
+    }
+
+    /**
+     * 设置删除回调（null 则列表项不显示删除按钮）
+     */
+    public void setDelInterface(SelectDelInterface delInterface) {
+        this.delInterface = delInterface;
+        this.delVisibleInterface = null;
+    }
+
+    /**
+     * 设置删除回调并按项控制删除按钮显隐（visible 为 null 则全部显示）
+     */
+    public void setDelInterface(SelectDelInterface delInterface, SelectDelVisibleInterface delVisibleInterface) {
+        this.delInterface = delInterface;
+        this.delVisibleInterface = delVisibleInterface;
     }
 
     public void setData(List<T> newData, int defaultSelect) {
@@ -84,15 +117,33 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         T value = data.get(position);
         String name = dialogInterface.getDisplay(value);
         TextView view = holder.itemView.findViewById(R.id.tvName);
+        // 白底弹窗：选中项白字加粗（蓝色焦点背景），未选中项深色字
         if (position == select) {
-            view.setTextColor(0xff02f8e1);
-            view .setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-        }else {
-            view.setTextColor(Color.WHITE);
-            view .setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
+            view.setTextColor(0xffffffff);
+            view.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+        } else {
+            view.setTextColor(0xcc000000);
+            view.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
         }
         view.setText(name);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        // 删除按钮（影视仓风格：设置删除回调时显示）
+        View delView = holder.itemView.findViewById(R.id.tvDel);
+        if (delView != null) {
+            boolean showDel = delInterface != null && (delVisibleInterface == null || delVisibleInterface.showDel(value));
+            if (showDel) {
+                delView.setVisibility(View.VISIBLE);
+                delView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        delInterface.del(value, position);
+                    }
+                });
+            } else {
+                delView.setVisibility(View.GONE);
+            }
+        }
+        // TV 焦点在 tvName 上，点击监听需直接绑定 tvName（itemView 点击不触发）
+        view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (position == select)

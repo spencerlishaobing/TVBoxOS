@@ -375,10 +375,12 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(SearchActivity.class);
         } else if (v.getId() == R.id.tvConfig) {
             if (getActivity() instanceof HomeActivity) {
-                ((HomeActivity) getActivity()).showConfigDialog();
+                // 影视仓：首页配置按钮直接弹仓库列表弹窗
+                ((HomeActivity) getActivity()).showMoreSourceDialog();
             }
         } else if (v.getId() == R.id.tvLine) {
             if (getActivity() instanceof HomeActivity) {
+                // 影视仓：有线路直接显示线路列表，无线路弹仓库配置
                 ((HomeActivity) getActivity()).showLineSwitch();
             }
         } else if (v.getId() == R.id.tvSetting) {

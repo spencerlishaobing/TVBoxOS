@@ -1799,7 +1799,7 @@ public class ApiConfig {
         return ijkCodes.get(0);
     }
 
-    String clanToAddress(String lanLink) {
+    public String clanToAddress(String lanLink) {
         if (lanLink.startsWith("clan://localhost/")) {
             return lanLink.replace("clan://localhost/", ControlManager.get().getAddress(true) + "file/");
         } else {

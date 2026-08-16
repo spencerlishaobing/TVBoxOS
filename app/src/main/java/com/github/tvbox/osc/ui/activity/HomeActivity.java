@@ -35,6 +35,7 @@ import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.AbsSortXml;
+import com.github.tvbox.osc.bean.MoreSourceBean;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
@@ -45,6 +46,7 @@ import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
 import com.github.tvbox.osc.ui.dialog.AddSourceDialog;
 import com.github.tvbox.osc.ui.dialog.ConfigDialog;
+import com.github.tvbox.osc.ui.dialog.MoreSourceDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
@@ -61,6 +63,7 @@ import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -70,6 +73,8 @@ import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -79,8 +84,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class HomeActivity extends BaseActivity {
     private LinearLayout topLayout;
@@ -879,9 +888,49 @@ public class HomeActivity extends BaseActivity {
     /**
      * 首页线路切换：当前仓的线路 + 其他仓 + 添加仓
      */
+    private MoreSourceDialog mMoreSourceDialog;
+
+    /**
+     * 更多源/线路配置弹窗（影视仓 more_source_dialog 交互）：
+     * 二维码 + 线路列表（选中/删除/拖动排序） + 名称/地址输入 + 确定
+     */
+    public void showMoreSourceDialog() {
+        if (isActivityUnavailable()) return;
+        if (mMoreSourceDialog == null) {
+            mMoreSourceDialog = new MoreSourceDialog(this);
+            mMoreSourceDialog.setOnListener(new MoreSourceDialog.OnListener() {
+                @Override
+                public void onConfirm(String name, String url) {
+                    mMoreSourceDialog = null;
+                    if (url != null && !url.isEmpty()) {
+                        // 影视仓 my0：点击仓库 → 请求该仓库线路列表弹窗（不直接切换）
+                        loadStoreLines(url);
+                    }
+                }
+
+                @Override
+                public void onCancel() {
+                    mMoreSourceDialog = null;
+                }
+            });
+        }
+        if (!mMoreSourceDialog.isShowing()) mMoreSourceDialog.show();
+    }
+
     public void showLineSwitch() {
         if (isActivityUnavailable()) return;
         ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+        // 影视仓 dy0 逻辑：无线路时，有选中仓库 → 请求该仓库线路列表；否则弹仓库列表
+        if (apiLines.isEmpty()) {
+            MoreSourceBean selected = Hawk.get(HawkConfig.CUSTOM_STORE_HOUSE_SELECTED, null);
+            String selectedUrl = selected != null ? selected.getSourceUrl() : null;
+            if (selectedUrl == null || selectedUrl.isEmpty()) {
+                showMoreSourceDialog();
+            } else {
+                loadStoreLines(selectedUrl);
+            }
+            return;
+        }
         ArrayList<String> sources = HistoryHelper.getApiSourceList();
         String current = Hawk.get(HawkConfig.API_URL, "");
         ArrayList<String> items = new ArrayList<>();
@@ -942,8 +991,208 @@ public class HomeActivity extends BaseActivity {
                 return HistoryHelper.getApiLineDisplayName(val);
             }
         }, SelectDialogAdapter.stringDiff, items, selectIdx);
+        // 删除线路/仓（影视仓风格：列表项带删除按钮）
+        mLineSwitchDialog.setDelInterface(new SelectDialogAdapter.SelectDelInterface<String>() {
+            @Override
+            public void del(String value, int pos) {
+                if (value.startsWith("#S#")) {
+                    // 删除仓
+                    String url = HistoryHelper.getApiLineUrl(value.substring(3));
+                    ArrayList<String> sources = HistoryHelper.getApiSourceList();
+                    sources.removeIf(s -> url.equals(HistoryHelper.getApiLineUrl(s)));
+                    HistoryHelper.saveApiSourceList(sources);
+                } else {
+                    // 删除线路
+                    ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+                    apiLines.removeIf(l -> value.equals(l));
+                    Hawk.put(HawkConfig.API_LINE_LIST, apiLines);
+                }
+                dismissLineSwitchDialog();
+                showMoreSourceDialog();
+            }
+        });
         if (!mLineSwitchDialog.isShowing()) mLineSwitchDialog.show();
     }
+
+    /**
+     * 影视仓 dy0 移植：线路列表缓存优先显示（FIRST_CACHE_THEN_REQUEST），后台静默刷新
+     */
+    public void loadStoreLines(String storeUrl) {
+        if (isActivityUnavailable() || storeUrl == null || storeUrl.trim().isEmpty()) return;
+        String reqUrl = storeUrl.trim();
+        if (reqUrl.startsWith("clan://")) {
+            reqUrl = ApiConfig.get().clanToAddress(reqUrl);
+        }
+        final String finalUrl = reqUrl;
+        final String cacheKey = "store_lines_cache_" + MD5.encode(finalUrl);
+        // 影视仓 FIRST_CACHE_THEN_REQUEST：缓存命中立即显示，后台静默刷新
+        ArrayList<String> cached = Hawk.get(cacheKey, null);
+        if (cached != null && !cached.isEmpty()) {
+            showStoreLineDialog(cached);
+            requestStoreLines(finalUrl, cacheKey, false);
+            return;
+        }
+        Toast.makeText(mContext, "稍等片刻，正在加载线路切换...", Toast.LENGTH_SHORT).show();
+        requestStoreLines(finalUrl, cacheKey, true);
+    }
+
+    /**
+     * 请求仓库 JSON（urls 数组）解析线路列表并写入缓存
+     */
+    private void requestStoreLines(final String finalUrl, final String cacheKey, final boolean showWhenDone) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    LOG.i("loadStoreLines: " + finalUrl);
+                    // 影视仓 dy0 请求方式：带 UA/Accept 头（gitcode 等仓库需要）
+                    OkHttpClient client = OkGoHelper.getDefaultClient().newBuilder()
+                            .connectTimeout(15, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .build();
+                    Request request = new Request.Builder().url(finalUrl)
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    String body = response.body() != null ? response.body().string() : "";
+                    body = body == null ? "" : body.trim();
+                    if (body.startsWith("\ufeff")) body = body.substring(1);
+                    LOG.i("loadStoreLines code=" + response.code() + " bodyLen=" + body.length());
+                    JSONArray urls = new JSONObject(body).getJSONArray("urls");
+                    final ArrayList<String> storeLines = new ArrayList<>();
+                    for (int i = 0; i < urls.length(); i++) {
+                        JSONObject o = urls.getJSONObject(i);
+                        String name = o.optString("name");
+                        String url = o.optString("url");
+                        if (url == null || url.isEmpty()) continue;
+                        storeLines.add(HistoryHelper.buildApiLine(name, url));
+                    }
+                    // 写入缓存，下次点击直接显示（影视仓 FIRST_CACHE 行为）
+                    Hawk.put(cacheKey, storeLines);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mLineSwitchDialog != null && mLineSwitchDialog.isShowing()) {
+                                showStoreLineDialog(storeLines);
+                            } else if (showWhenDone) {
+                                showStoreLineDialog(storeLines);
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    final String msg = e.getMessage();
+                    LOG.e("loadStoreLines error: " + msg);
+                    if (showWhenDone) {
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mContext, "接口请求失败" + msg, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 影视仓 bv0/av0 移植：显示“选择线路”弹窗（仓库线路 + 自定义线路），点击线路才切换
+     */
+    private void showStoreLineDialog(ArrayList<String> storeLines) {
+        if (isActivityUnavailable()) return;
+        if (storeLines == null || storeLines.isEmpty()) {
+            Toast.makeText(mContext, "线路列表为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        LOG.i("showStoreLineDialog items=" + storeLines.size());
+        // 合并本地自定义线路（url 不在仓库线路中的，影视仓 api_history_list 逻辑）
+        ArrayList<String> items = new ArrayList<>(storeLines);
+        ArrayList<String> storeLineUrls = new ArrayList<>();
+        for (String line : storeLines) {
+            storeLineUrls.add(HistoryHelper.getApiLineUrl(line));
+        }
+        ArrayList<String> apiLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+        int n = 1;
+        for (String line : apiLines) {
+            String u = HistoryHelper.getApiLineUrl(line);
+            if (storeLineUrls.contains(u)) continue;
+            String name = HistoryHelper.getApiLineName(line);
+            if (name == null || name.isEmpty()) {
+                name = "自定义配置地址" + n;
+            }
+            items.add(HistoryHelper.buildApiLine(name, u));
+            n++;
+        }
+        String current = Hawk.get(HawkConfig.API_URL, "");
+        int idx = 0;
+        for (int i = 0; i < items.size(); i++) {
+            if (current.equals(HistoryHelper.getApiLineUrl(items.get(i)))) {
+                idx = i;
+                break;
+            }
+        }
+        if (mLineSwitchDialog == null) {
+            mLineSwitchDialog = new SelectDialog<>(HomeActivity.this);
+            mLineSwitchDialog.setTip("选择线路");
+        }
+        final int selectIdx = idx;
+        mLineSwitchDialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<String>() {
+            @Override
+            public void click(String value, int pos) {
+                dismissLineSwitchDialog();
+                String newApi = HistoryHelper.getApiLineUrl(value);
+                if (!newApi.isEmpty()) {
+                    applyApiLine(newApi);
+                }
+            }
+
+            @Override
+            public String getDisplay(String val) {
+                return HistoryHelper.getApiLineDisplayName(val);
+            }
+        }, SelectDialogAdapter.stringDiff, items, selectIdx);
+        // 删除按钮仅本地自定义线路显示（影视仓 showDelete，按 url 匹配）
+        final ArrayList<String> customLines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+        mLineSwitchDialog.setDelInterface(new SelectDialogAdapter.SelectDelInterface<String>() {
+            @Override
+            public void del(String value, int pos) {
+                final String delUrl = HistoryHelper.getApiLineUrl(value);
+                ArrayList<String> lines = Hawk.get(HawkConfig.API_LINE_LIST, new ArrayList<String>());
+                lines.removeIf(l -> delUrl.equals(HistoryHelper.getApiLineUrl(l)));
+                Hawk.put(HawkConfig.API_LINE_LIST, lines);
+                dismissLineSwitchDialog();
+                showLineSwitch();
+            }
+        }, new SelectDialogAdapter.SelectDelVisibleInterface<String>() {
+            @Override
+            public boolean showDel(String value) {
+                String u = HistoryHelper.getApiLineUrl(value);
+                for (String l : customLines) {
+                    if (u.equals(HistoryHelper.getApiLineUrl(l))) return true;
+                }
+                return false;
+            }
+        });
+        if (!mLineSwitchDialog.isShowing()) mLineSwitchDialog.show();
+    }
+
+
+/**
+     * 影视仓 xx0 移植：应用线路地址并刷新首页（不清空本地线路列表）
+     */
+    private void applyApiLine(String newApi) {
+        if (newApi == null || newApi.isEmpty()) return;
+        String oldApi = Hawk.get(HawkConfig.API_URL, "");
+        if (newApi.equals(oldApi)) return;
+        Hawk.put(HawkConfig.API_URL, newApi);
+        Hawk.put(HawkConfig.LIVE_API_URL, newApi);
+        HistoryHelper.setLiveApiHistory(newApi);
+        HistoryHelper.setApiHistory(newApi);
+        Toast.makeText(mContext, "线路切换中...", Toast.LENGTH_SHORT).show();
+        refreshHome(true);
+    }
+
 
     /**
      * 切换线路/仓并重新加载首页
@@ -954,6 +1203,7 @@ public class HomeActivity extends BaseActivity {
         Hawk.put(HawkConfig.API_URL, newApi);
         Hawk.put(HawkConfig.LIVE_API_URL, newApi);
         HistoryHelper.setLiveApiHistory(newApi);
+        HistoryHelper.setApiHistory(newApi);
         if (!HistoryHelper.isApiLineUrl(newApi)) {
             // 切换的是仓地址，线路列表待加载时重建
             HistoryHelper.clearApiLineList();
